@@ -1,8 +1,8 @@
 import { GoogleGenAI } from "@google/genai";
 import { RepoData } from "./github";
 
-export async function generateRepoDescription(data: RepoData): Promise<string> {
-    const apiKey = process.env.API_KEY || process.env.NEXT_PUBLIC_API_KEY;
+export async function generateRepoDescription(data: RepoData, features?: string, benefits?: string): Promise<string> {
+    const apiKey = process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY;
     if (!apiKey) {
         throw new Error("AI API Key is missing");
     }
@@ -30,19 +30,43 @@ Languages: ${techStack}
 Files: ${data.fileStructure.join(", ")}
 ${deps ? `Key Dependencies: ${deps}` : ""}
 README Snippet: ${data.readme ? data.readme.slice(0, 300) : "N/A"}
+${features ? `Product Features: ${features}` : ""}
+${benefits ? `User Benefits: ${benefits}` : ""}
 
 DESCRIPTION:
 `;
 
-    const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: prompt,
-    });
-    let text = response.text || "";
-    text = text.trim();
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-2.0-flash",
+            contents: [{ role: "user", parts: [{ text: prompt }] }],
+        });
 
-    // Clean up if AI added quotes or extra lines
-    text = text.replace(/^["']|["']$/g, "").split("\n")[0];
+        // The response structure in the new SDK:
+        // response is the GenerateContentResponse object
+        const textOutput = response.text || "";
 
-    return text.slice(0, 160);
+        if (!textOutput) {
+            throw new Error("AI response was empty or invalid");
+        }
+
+        let text = textOutput.trim();
+
+        // Clean up if AI added quotes or extra lines
+        text = text.replace(/^["']|["']$/g, "").split("\n")[0];
+
+        return text.slice(0, 160);
+    } catch (err: any) {
+        console.error("AI Generation Error:", err);
+        const message = err.message || "";
+
+        if (message.includes("429")) {
+            throw new Error("AI Error: Rate limit exceeded. Please try again in a minute.");
+        }
+        if (message.includes("404")) {
+            throw new Error("AI Error: Model not found or unavailable.");
+        }
+
+        throw new Error(`AI Error: ${message || "Failed to generate description"}`);
+    }
 }

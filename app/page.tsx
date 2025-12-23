@@ -4,9 +4,12 @@ import { useState } from "react";
 import { BsGithub, BsClipboard, BsCheck2 } from "react-icons/bs";
 import { RiAiGenerate } from "react-icons/ri";
 import { CgClose, CgSpinner } from "react-icons/cg";
+import { toast } from "sonner";
 
 export default function Home() {
   const [url, setUrl] = useState("");
+  const [features, setFeatures] = useState("");
+  const [benefits, setBenefits] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -18,22 +21,33 @@ export default function Home() {
     setError(null);
     setResult(null);
 
+    const startTime = Date.now();
+    console.log("Generating description for:", url);
+
     try {
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url, features, benefits }),
       });
 
       const data = await response.json();
 
       if (data.success) {
         setResult(data.description);
+        const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+        console.log(`Successfully generated in ${duration}s`);
+        toast.success("Description generated successfully!");
       } else {
-        setError(data.error || "Failed to generate description");
+        const errorMsg = data.error || "Failed to generate description";
+        console.error("Generation error:", data);
+        setError(errorMsg);
+        toast.error("Failed to generate description. Check console for details.");
       }
     } catch (err) {
+      console.error("Request error:", err);
       setError("Something went wrong. Please try again.");
+      toast.error("An unexpected error occurred.");
     } finally {
       setLoading(false);
     }
@@ -44,6 +58,24 @@ export default function Home() {
       navigator.clipboard.writeText(result);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const getShareableLink = () => {
+    if (!url) return;
+    try {
+      // Validate the GitHub URL
+      const urlObj = new URL(url);
+
+      // Construct the shareable URL using the catch-all path
+      // Example: https://github.com/user/repo -> /github.com/user/repo
+      const cleanPath = url.replace(/^https?:\/\//, "");
+      const shareableUrl = `${window.location.origin}/${cleanPath}`;
+      navigator.clipboard.writeText(shareableUrl);
+      toast.success("Shareable link copied to clipboard!");
+    } catch (error) {
+      console.error("Failed to generate shareable link:", error);
+      toast.error("Invalid URL format. Please enter a valid GitHub URL.");
     }
   };
 
@@ -66,37 +98,64 @@ export default function Home() {
         </div>
 
         <div className="bg-[#111111] border border-white/10 rounded-3xl p-6 shadow-2xl space-y-6">
-          <div className="space-y-2">
-            <div className="relative flex items-center group">
-              <input
-                type="text"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder="https://github.com/username/repo"
-                className="w-full bg-black/50 border border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all placeholder:text-gray-600"
-              />
-              {url && (
-                <button
-                  onClick={() => setUrl("")}
-                  className="absolute right-4 p-2 text-gray-400 hover:text-white transition-colors"
-                >
-                  <CgClose size={20} />
-                </button>
-              )}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-xs uppercase tracking-widest text-gray-500 font-semibold pl-1">
+                GitHub Repository URL
+              </label>
+              <div className="relative flex items-center group">
+                <input
+                  type="text"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  placeholder="https://github.com/username/repo"
+                  className="w-full bg-black/50 border border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all placeholder:text-gray-600"
+                />
+                {url && (
+                  <button
+                    onClick={() => setUrl("")}
+                    className="absolute right-4 p-2 text-gray-400 hover:text-white transition-colors"
+                  >
+                    <CgClose size={20} />
+                  </button>
+                )}
+              </div>
             </div>
-            {error && (
-              <p className="text-red-400 text-sm pl-2 animate-in fade-in slide-in-from-top-1">
-                {error}
-              </p>
-            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs uppercase tracking-widest text-gray-500 font-semibold pl-1">
+                  Core Features
+                </label>
+                <input
+                  type="text"
+                  value={features}
+                  onChange={(e) => setFeatures(e.target.value)}
+                  placeholder="e.g. Real-time sync, auth"
+                  className="w-full bg-black/50 border border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all placeholder:text-gray-600"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs uppercase tracking-widest text-gray-500 font-semibold pl-1">
+                  Key Benefits
+                </label>
+                <input
+                  type="text"
+                  value={benefits}
+                  onChange={(e) => setBenefits(e.target.value)}
+                  placeholder="e.g. Speed, Security"
+                  className="w-full bg-black/50 border border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all placeholder:text-gray-600"
+                />
+              </div>
+            </div>
           </div>
 
           <button
             onClick={handleGenerate}
             disabled={loading || !url}
             className={`w-full py-4 rounded-2xl flex items-center justify-center gap-3 font-medium transition-all duration-300 ${loading || !url
-                ? "bg-white/5 text-gray-500 cursor-not-allowed border border-white/5"
-                : "bg-white text-black hover:bg-green-400 border border-white"
+              ? "bg-white/5 text-gray-500 cursor-not-allowed border border-white/5"
+              : "bg-white text-black hover:bg-green-400 border border-white"
               }`}
           >
             {loading ? (
@@ -108,6 +167,16 @@ export default function Home() {
               </>
             )}
           </button>
+
+          {url && !loading && (
+            <button
+              onClick={getShareableLink}
+              className="w-full py-3 rounded-2xl flex items-center justify-center gap-2 font-medium transition-all duration-300 bg-green-500/10 text-green-400 hover:bg-green-500/20 border border-green-500/20"
+            >
+              <BsClipboard size={18} />
+              Get Shareable Link
+            </button>
+          )}
         </div>
 
         {result && (

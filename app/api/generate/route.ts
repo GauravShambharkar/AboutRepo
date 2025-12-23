@@ -4,7 +4,7 @@ import { generateRepoDescription } from "@/lib/ai";
 
 export async function POST(req: NextRequest) {
     try {
-        const { url } = await req.json();
+        const { url, features, benefits } = await req.json();
 
         if (!url) {
             return NextResponse.json({ error: "GitHub URL is required" }, { status: 400 });
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
         const repoData = await fetchRepoData(repoInfo.owner, repoInfo.repo);
 
         // 2. Generate Description via AI
-        const description = await generateRepoDescription(repoData);
+        const description = await generateRepoDescription(repoData, features, benefits);
 
         return NextResponse.json({
             success: true,
