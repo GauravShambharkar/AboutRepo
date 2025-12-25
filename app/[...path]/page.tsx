@@ -218,9 +218,9 @@ export default function AnalyzePage() {
                                 <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
                                 Generated Description
                             </span>
-                            <span className={`text-xs ${result.length > 160 ? 'text-red-400' : 'text-gray-500'}`}>
+                            {/* <span className={`text-xs ${result.length > 160 ? 'text-red-400' : 'text-gray-500'}`}>
                                 {result.length} / 160
-                            </span>
+                            </span> */}
                         </div>
 
                         <div className="relative group">

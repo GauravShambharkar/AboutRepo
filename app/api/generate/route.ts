@@ -32,12 +32,21 @@ export async function POST(req: NextRequest) {
 
     } catch (error: any) {
         console.error("API Error:", error);
+
+        let status = 500;
+        let message = error.message || "An unexpected error occurred";
+
+        if (message.includes("Rate limit exceeded") || message.includes("429")) {
+            status = 429;
+            message = "AI service is currently busy. Please try again in a few moments.";
+        }
+
         return NextResponse.json(
             {
                 success: false,
-                error: error.message || "An unexpected error occurred"
+                error: message
             },
-            { status: 500 }
+            { status }
         );
     }
 }

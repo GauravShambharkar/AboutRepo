@@ -16,11 +16,12 @@ export async function generateRepoDescription(data: RepoData, features?: string,
 Generate a 4-line GitHub "About" description for the following repository. 
 
 RULES:
-- Max 160 characters.
+- Max 280 characters.
 - NO emojis.
-- NO marketing fluff.
+- little marketing fluff.
 - Practical and developer-friendly.
-- Format: [Brief Purpose] + [Main Tech Stack].
+- Format: [Brief Purpose] + [Main Tech Stack] + [Detailed Value Proposition].
+- Aim for a detailed description that utilizes the full character limit (approx 280-299 chars).
 - Output ONLY the description text. No quotes.
 
 CONTEXT:
@@ -29,7 +30,7 @@ Current Description: ${data.description || "None"}
 Languages: ${techStack}
 Files: ${data.fileStructure.join(", ")}
 ${deps ? `Key Dependencies: ${deps}` : ""}
-README Snippet: ${data.readme ? data.readme.slice(0, 300) : "N/A"}
+README Snippet: ${data.readme ? data.readme : "N/A"}
 ${features ? `Product Features: ${features}` : ""}
 ${benefits ? `User Benefits: ${benefits}` : ""}
 
@@ -38,7 +39,7 @@ DESCRIPTION:
 
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-2.0-flash",
+            model: "gemini-2.5-flash",
             contents: [{ role: "user", parts: [{ text: prompt }] }],
         });
 
@@ -55,7 +56,7 @@ DESCRIPTION:
         // Clean up if AI added quotes or extra lines
         text = text.replace(/^["']|["']$/g, "").split("\n")[0];
 
-        return text.slice(0, 160);
+        return text.slice(0, 300);
     } catch (err: any) {
         console.error("AI Generation Error:", err);
         const message = err.message || "";

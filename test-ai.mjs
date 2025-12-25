@@ -11,8 +11,8 @@ async function test() {
     const ai = new GoogleGenAI({ apiKey: apiKey });
     console.log("AI client initialized");
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: "Hello",
+      model: "gemini-2.5-flash",
+      contents: [{ role: "user", parts: [{ text: "Hello" }] }],
     });
     console.log("Response:", JSON.stringify(response, null, 2));
   } catch (err) {
