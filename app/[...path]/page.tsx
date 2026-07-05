@@ -111,7 +111,7 @@ export default function AnalyzePage() {
                     <BsGithub className="text-6xl text-red-500 mx-auto" />
                     <h1 className="text-3xl font-light">Invalid GitHub URL</h1>
                     <p className="text-gray-400 leading-relaxed">
-                        The provided URL doesn't appear to be a valid GitHub repository URL.
+                        The provided URL doesn&apos;t appear to be a valid GitHub repository URL.
                     </p>
                     <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 text-left">
                         <p className="text-xs uppercase tracking-widest text-gray-500 font-semibold mb-2">Provided URL:</p>
@@ -131,32 +131,32 @@ export default function AnalyzePage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col items-center justify-center p-6 selection:bg-green-500/30">
-            <div className="w-full max-w-2xl space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
-                <div className="text-center space-y-4">
-                    <div className="flex justify-center mb-6">
+        <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col items-center justify-start md:justify-center py-10 px-4 sm:px-6 md:p-8 selection:bg-green-500/30">
+            <div className="w-full max-w-2xl space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+                <div className="text-center space-y-3 sm:space-y-4">
+                    <div className="flex justify-center mb-4 sm:mb-6">
                         <div className="relative">
-                            <BsGithub className="text-8xl text-green-500/50 blur-2xl absolute inset-0 animate-pulse" />
-                            <BsGithub className="text-8xl relative z-10" />
+                            <BsGithub className="text-6xl sm:text-8xl text-green-500/50 blur-2xl absolute inset-0 animate-pulse" />
+                            <BsGithub className="text-6xl sm:text-8xl relative z-10" />
                         </div>
                     </div>
-                    <h1 className="text-6xl font-light tracking-tight sm:text-7xl">
+                    <h1 className="text-4xl sm:text-6xl md:text-7xl font-light tracking-tight">
                         Its About Repo
                     </h1>
-                    <p className="text-gray-400 text-lg font-light">
-                        Generate developer-focused GitHub "About" descriptions in seconds.
+                    <p className="text-gray-400 text-sm sm:text-base md:text-lg font-light max-w-md mx-auto">
+                        Generate developer-focused GitHub &quot;About&quot; descriptions in seconds.
                     </p>
-                    <div className="mt-4 p-4 bg-green-500/10 border border-green-500/20 rounded-2xl">
-                        <p className="text-sm text-gray-400 uppercase tracking-widest font-semibold mb-2">
+                    <div className="mt-3 p-3 sm:p-4 bg-green-500/10 border border-green-500/20 rounded-xl sm:rounded-2xl">
+                        <p className="text-xs text-gray-500 uppercase tracking-widest font-semibold mb-1">
                             Repository
                         </p>
-                        <p className="text-green-400 font-mono text-sm break-all">
+                        <p className="text-green-400 font-mono text-xs sm:text-sm break-all">
                             {repoUrl}
                         </p>
                     </div>
                 </div>
 
-                <div className="bg-[#111111] border border-white/10 rounded-3xl p-6 shadow-2xl space-y-6">
+                <div className="bg-[#111111] border border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl space-y-5 sm:space-y-6">
                     <div className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
@@ -168,7 +168,7 @@ export default function AnalyzePage() {
                                     value={features}
                                     onChange={(e) => setFeatures(e.target.value)}
                                     placeholder="e.g. Real-time sync, auth"
-                                    className="w-full bg-black/50 border border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all placeholder:text-gray-600"
+                                    className="w-full bg-black/50 border border-white/10 rounded-xl sm:rounded-2xl px-4 py-3 sm:px-6 sm:py-4 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all placeholder:text-gray-600 text-sm sm:text-base"
                                 />
                             </div>
                             <div className="space-y-2">
@@ -180,7 +180,7 @@ export default function AnalyzePage() {
                                     value={benefits}
                                     onChange={(e) => setBenefits(e.target.value)}
                                     placeholder="e.g. Speed, Security"
-                                    className="w-full bg-black/50 border border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all placeholder:text-gray-600"
+                                    className="w-full bg-black/50 border border-white/10 rounded-xl sm:rounded-2xl px-4 py-3 sm:px-6 sm:py-4 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all placeholder:text-gray-600 text-sm sm:text-base"
                                 />
                             </div>
                         </div>
@@ -189,16 +189,16 @@ export default function AnalyzePage() {
                     <button
                         onClick={handleGenerate}
                         disabled={loading || !repoUrl}
-                        className={`w-full py-4 rounded-2xl flex items-center justify-center gap-3 font-medium transition-all duration-300 ${loading || !repoUrl
+                        className={`w-full py-3.5 sm:py-4 rounded-xl sm:rounded-2xl flex items-center justify-center gap-3 font-medium transition-all duration-300 text-sm sm:text-base ${loading || !repoUrl
                             ? "bg-white/5 text-gray-500 cursor-not-allowed border border-white/5"
                             : "bg-white text-black hover:bg-green-400 border border-white"
                             }`}
                     >
                         {loading ? (
-                            <CgSpinner className="animate-spin" size={24} />
+                            <CgSpinner className="animate-spin size-5 sm:size-6" />
                         ) : (
                             <>
-                                <RiAiGenerate size={24} />
+                                <RiAiGenerate className="size-5 sm:size-6" />
                                 Generate Description
                             </>
                         )}
@@ -206,30 +206,21 @@ export default function AnalyzePage() {
                 </div>
 
                 {error && (
-                    <div className="bg-red-500/10 border border-red-500/20 rounded-3xl p-6">
+                    <div className="bg-red-500/10 border border-red-500/20 rounded-2xl sm:rounded-3xl p-4 sm:p-6">
                         <p className="text-red-400 text-sm">{error}</p>
                     </div>
                 )}
 
                 {result && (
-                    <div className="bg-[#111111] border border-green-500/20 rounded-3xl p-6 space-y-4 animate-in fade-in zoom-in-95 duration-500">
-                        <div className="flex justify-between items-center text-sm">
-                            <span className="text-gray-400 uppercase tracking-widest font-semibold flex items-center gap-2">
+                    <div className="bg-[#111111] border border-green-500/20 rounded-2xl sm:rounded-3xl p-4 sm:p-6 space-y-4 animate-in fade-in zoom-in-95 duration-500">
+                        <div className="flex justify-between items-center text-sm gap-2">
+                            <span className="text-gray-400 uppercase tracking-widest font-semibold flex items-center gap-2 text-xs sm:text-sm">
                                 <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
                                 Generated Description
                             </span>
-                            {/* <span className={`text-xs ${result.length > 160 ? 'text-red-400' : 'text-gray-500'}`}>
-                                {result.length} / 160
-                            </span> */}
-                        </div>
-
-                        <div className="relative group">
-                            <p className="text-xl font-light leading-relaxed text-gray-200 py-2">
-                                {result}
-                            </p>
                             <button
                                 onClick={copyToClipboard}
-                                className="absolute -right-2 -top-12 flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-4 py-2 text-sm transition-all active:scale-95 group-hover:border-green-500/30"
+                                className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-3 py-1.5 text-xs transition-all active:scale-95 hover:border-green-500/30 cursor-pointer"
                             >
                                 {copied ? (
                                     <>
@@ -244,12 +235,18 @@ export default function AnalyzePage() {
                                 )}
                             </button>
                         </div>
+
+                        <div className="relative">
+                            <p className="text-base sm:text-lg md:text-xl font-light leading-relaxed text-gray-200 py-1">
+                                {result}
+                            </p>
+                        </div>
                     </div>
                 )}
             </div>
 
-            <footer className="mt-20 text-gray-600 text-sm font-light">
-                Built with Gemini AI & GitHub REST API
+            <footer className="mt-12 sm:mt-20 text-gray-600 text-xs sm:text-sm font-light text-center">
+                Built with Groq AI & GitHub REST API
             </footer>
         </div>
     );

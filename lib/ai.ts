@@ -1,18 +1,21 @@
-import { GoogleGenAI } from "@google/genai";
 import { RepoData } from "./github";
 
-export async function generateRepoDescription(data: RepoData, features?: string, benefits?: string): Promise<string> {
-    const apiKey = process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-        throw new Error("AI API Key is missing");
-    }
+export async function generateRepoDescription(
+  data: RepoData,
+  features?: string,
+  benefits?: string,
+): Promise<string> {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) {
+    throw new Error("AI API Key is missing");
+  }
 
-    const ai = new GoogleGenAI({ apiKey: apiKey });
+  const techStack = data.languages.slice(0, 3).join(", ");
+  const deps = data.packageJson?.dependencies
+    ? Object.keys(data.packageJson.dependencies).slice(0, 5).join(", ")
+    : "";
 
-    const techStack = data.languages.slice(0, 3).join(", ");
-    const deps = data.packageJson?.dependencies ? Object.keys(data.packageJson.dependencies).slice(0, 5).join(", ") : "";
-
-    const prompt = `
+  const prompt = `
 Generate a 4-line GitHub "About" description for the following repository. 
 
 RULES:
@@ -23,6 +26,7 @@ RULES:
 - Format: [Brief Purpose] + [Main Tech Stack] + [Detailed Value Proposition].
 - Aim for a detailed description that utilizes the full character limit (approx 280-299 chars).
 - Output ONLY the description text. No quotes.
+- no involment of seo stuff.
 
 CONTEXT:
 Repo Name: ${data.name}
@@ -37,37 +41,56 @@ ${benefits ? `User Benefits: ${benefits}` : ""}
 DESCRIPTION:
 `;
 
-    try {
-        const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
-            contents: [{ role: "user", parts: [{ text: prompt }] }],
-        });
+  try {
+    const response = await fetch(
+      "https://api.groq.com/openai/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          messages: [{ role: "user", content: prompt }],
+          temperature: 0.5,
+          max_tokens: 150,
+        }),
+      },
+    );
 
-        // The response structure in the new SDK:
-        // response is the GenerateContentResponse object
-        const textOutput = response.text || "";
-
-        if (!textOutput) {
-            throw new Error("AI response was empty or invalid");
-        }
-
-        let text = textOutput.trim();
-
-        // Clean up if AI added quotes or extra lines
-        text = text.replace(/^["']|["']$/g, "").split("\n")[0];
-
-        return text.slice(0, 300);
-    } catch (err: any) {
-        console.error("AI Generation Error:", err);
-        const message = err.message || "";
-
-        if (message.includes("429")) {
-            throw new Error("AI Error: Rate limit exceeded. Please try again in a minute.");
-        }
-        if (message.includes("404")) {
-            throw new Error("AI Error: Model not found or unavailable.");
-        }
-
-        throw new Error(`AI Error: ${message || "Failed to generate description"}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Groq API error (${response.status}): ${errorText}`);
     }
+
+    const result = await response.json();
+    const textOutput = result.choices?.[0]?.message?.content || "";
+
+    if (!textOutput) {
+      throw new Error("AI response was empty or invalid");
+    }
+
+    let text = textOutput.trim();
+
+    // Clean up if AI added quotes or extra lines
+    text = text.replace(/^["']|["']$/g, "").split("\n")[0];
+
+    return text.slice(0, 300);
+  } catch (err: unknown) {
+    const error = err as Error;
+    console.error("AI Generation Error:", error);
+    const message = error.message || "";
+
+    if (message.includes("429")) {
+      throw new Error(
+        "AI Error: Rate limit exceeded. Please try again in a minute.",
+      );
+    }
+    if (message.includes("404")) {
+      throw new Error("AI Error: Model not found or unavailable.");
+    }
+
+    throw new Error(`AI Error: ${message || "Failed to generate description"}`);
+  }
 }

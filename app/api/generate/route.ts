@@ -30,11 +30,12 @@ export async function POST(req: NextRequest) {
             }
         });
 
-    } catch (error: any) {
-        console.error("API Error:", error);
+    } catch (error: unknown) {
+        const err = error as Error;
+        console.error("API Error:", err);
 
         let status = 500;
-        let message = error.message || "An unexpected error occurred";
+        let message = err.message || "An unexpected error occurred";
 
         if (message.includes("Rate limit exceeded") || message.includes("429")) {
             status = 429;

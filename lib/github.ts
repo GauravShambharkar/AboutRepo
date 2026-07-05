@@ -3,7 +3,10 @@ export interface RepoData {
     description: string | null;
     languages: string[];
     fileStructure: string[];
-    packageJson?: any;
+    packageJson?: {
+        dependencies?: Record<string, string>;
+        [key: string]: unknown;
+    } | null;
     readme?: string;
 }
 
@@ -51,7 +54,7 @@ export async function fetchRepoData(owner: string, repo: string): Promise<RepoDa
     // 3. Fetch Top-level File Structure
     const contentsRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents`, { headers });
     const contents = contentsRes.ok ? await contentsRes.json() : [];
-    const fileStructure = Array.isArray(contents) ? contents.map((c: any) => c.name) : [];
+    const fileStructure = Array.isArray(contents) ? contents.map((c: { name: string }) => c.name) : [];
 
     // 4. Fetch package.json (if exists)
     let packageJson = null;
@@ -98,7 +101,7 @@ export function parseGitHubUrl(url: string): { owner: string; repo: string } | n
         if (repo.endsWith(".git")) repo = repo.slice(0, -4);
 
         return { owner, repo };
-    } catch (e) {
+    } catch {
         return null;
     }
 }
