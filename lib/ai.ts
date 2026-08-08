@@ -56,7 +56,7 @@ DESCRIPTION:
         // Clean up if AI added quotes or extra lines
         text = text.replace(/^["']|["']$/g, "").split("\n")[0];
 
-        return text.slice(0, 300);
+        return text;
     } catch (err: any) {
         console.error("AI Generation Error:", err);
         const message = err.message || "";
