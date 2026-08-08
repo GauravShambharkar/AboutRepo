@@ -1,3 +1,4 @@
+import { GoogleGenAI } from "@google/genai";
 import { RepoData } from "./github";
 
 export async function generateRepoDescription(
@@ -5,9 +6,13 @@ export async function generateRepoDescription(
   features?: string,
   benefits?: string,
 ): Promise<string> {
-  const apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey) {
-    throw new Error("AI API Key is missing");
+  const groqApiKey = process.env.GROQ_API_KEY;
+  const geminiApiKey = process.env.GEMINI_API_KEY;
+
+  if (!groqApiKey && !geminiApiKey) {
+    throw new Error(
+      "AI API Key is missing. Please set GEMINI_API_KEY or GROQ_API_KEY in your .env file."
+    );
   }
 
   const techStack = data.languages.slice(0, 3).join(", ");
@@ -16,17 +21,15 @@ export async function generateRepoDescription(
     : "";
 
   const prompt = `
-Generate a 4-line GitHub "About" description for the following repository. 
+Generate a concise, high-impact GitHub "About" description for the following repository.
 
 RULES:
 - Max 280 characters.
 - NO emojis.
-- little marketing fluff.
-- Practical and developer-friendly.
-- Format: [Brief Purpose] + [Main Tech Stack] + [Detailed Value Proposition].
-- Aim for a detailed description that utilizes the full character limit (approx 280-299 chars).
-- Output ONLY the description text. No quotes.
-- no involment of seo stuff.
+- Focus heavily on core functionality, product features, and key user/developer benefits.
+- DO NOT waste characters listing tech stacks, dependencies, or language names unless essential.
+- Format: [Primary Purpose & What It Does] + [Key Feature / Functionality] + [Core Value & Benefit].
+- Output ONLY the description text. No quotes, no markdown formatting.
 
 CONTEXT:
 Repo Name: ${data.name}
@@ -35,66 +38,50 @@ Languages: ${techStack}
 Files: ${data.fileStructure.join(", ")}
 ${deps ? `Key Dependencies: ${deps}` : ""}
 README Snippet: ${data.readme ? data.readme : "N/A"}
-${features ? `Product Features: ${features}` : ""}
-${benefits ? `User Benefits: ${benefits}` : ""}
+${features ? `Core Features: ${features}` : ""}
+${benefits ? `Key Benefits: ${benefits}` : ""}
 
 DESCRIPTION:
 `;
 
   try {
-    const response = await fetch(
-      "https://api.groq.com/openai/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
-          messages: [{ role: "user", content: prompt }],
-          temperature: 0.5,
-          max_tokens: 150,
-        }),
-      },
-    );
+    let textOutput = "";
 
-<<<<<<< HEAD
-        // The response structure in the new SDK:
-        // response is the GenerateContentResponse object
-        const textOutput = response.text || "";
-
-        if (!textOutput) {
-            throw new Error("AI response was empty or invalid");
+    if (groqApiKey) {
+      const response = await fetch(
+        "https://api.groq.com/openai/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${groqApiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "llama-3.3-70b-versatile",
+            messages: [{ role: "user", content: prompt }],
+            temperature: 0.5,
+            max_tokens: 150,
+          }),
         }
+      );
 
-        let text = textOutput.trim();
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Groq API error (${response.status}): ${errorText}`
+        );
+      }
 
-        // Clean up if AI added quotes or extra lines
-        text = text.replace(/^["']|["']$/g, "").split("\n")[0];
-
-        return text;
-    } catch (err: any) {
-        console.error("AI Generation Error:", err);
-        const message = err.message || "";
-
-        if (message.includes("429")) {
-            throw new Error("AI Error: Rate limit exceeded. Please try again in a minute.");
-        }
-        if (message.includes("404")) {
-            throw new Error("AI Error: Model not found or unavailable.");
-        }
-
-        throw new Error(`AI Error: ${message || "Failed to generate description"}`);
-=======
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Groq API error (${response.status}): ${errorText}`);
->>>>>>> ca54d01477c4addab4c6a7ef19fead0e71251258
+      const result = await response.json();
+      textOutput = result.choices?.[0]?.message?.content || "";
+    } else if (geminiApiKey) {
+      const ai = new GoogleGenAI({ apiKey: geminiApiKey });
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+      });
+      textOutput = response.text || "";
     }
-
-    const result = await response.json();
-    const textOutput = result.choices?.[0]?.message?.content || "";
 
     if (!textOutput) {
       throw new Error("AI response was empty or invalid");
@@ -102,24 +89,28 @@ DESCRIPTION:
 
     let text = textOutput.trim();
 
-    // Clean up if AI added quotes or extra lines
+    // Remove quotes and keep only the first line
     text = text.replace(/^["']|["']$/g, "").split("\n")[0];
 
-    return text.slice(0, 300);
+    return text.slice(0, 280);
   } catch (err: unknown) {
     const error = err as Error;
     console.error("AI Generation Error:", error);
+
     const message = error.message || "";
 
     if (message.includes("429")) {
       throw new Error(
-        "AI Error: Rate limit exceeded. Please try again in a minute.",
+        "AI Error: Rate limit exceeded. Please try again in a minute."
       );
     }
+
     if (message.includes("404")) {
       throw new Error("AI Error: Model not found or unavailable.");
     }
 
-    throw new Error(`AI Error: ${message || "Failed to generate description"}`);
+    throw new Error(
+      `AI Error: ${message || "Failed to generate description"}`
+    );
   }
 }

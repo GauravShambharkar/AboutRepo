@@ -2,14 +2,12 @@
 
 import { useEffect } from "react";
 import { useParams } from "next/navigation";
-import {
-  Header,
-  GeneratorForm,
-  ResultCard,
-  Footer,
-  InvalidRepoNotice,
-  useGeneratorStore,
-} from "@/src/features/generator";
+import { Header } from "@/src/features/generator/components/Header";
+import { GeneratorForm } from "@/src/features/generator/components/GeneratorForm";
+import { ResultCard } from "@/src/features/generator/components/ResultCard";
+import { Footer } from "@/src/features/generator/components/Footer";
+import { InvalidRepoNotice } from "@/src/features/generator/components/InvalidRepoNotice";
+import { useGeneratorStore } from "@/src/features/generator/store/useGeneratorStore";
 
 export default function AnalyzePage() {
   const params = useParams();

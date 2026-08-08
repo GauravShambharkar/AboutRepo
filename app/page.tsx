@@ -1,6 +1,9 @@
 "use client";
 
-import { Header, GeneratorForm, ResultCard, Footer } from "@/src/features/generator";
+import { Header } from "@/src/features/generator/components/Header";
+import { GeneratorForm } from "@/src/features/generator/components/GeneratorForm";
+import { ResultCard } from "@/src/features/generator/components/ResultCard";
+import { Footer } from "@/src/features/generator/components/Footer";
 
 export default function Home() {
   return (
